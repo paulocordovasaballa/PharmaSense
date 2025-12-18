@@ -6,7 +6,7 @@ DATABASE_NAME = 'pharma.db'
 def create_connection():
     try:
         conn = sqlite3.connect(DATABASE_NAME)
-        # CRITICAL FIX: This enables accessing columns by name (e.g., row['drug_a'])
+        # Enables accessing columns by name (e.g., row['drug_a'])
         conn.row_factory = sqlite3.Row 
         return conn
     except sqlite3.Error as e:
@@ -22,7 +22,6 @@ def setup_database(conn):
             password_hash TEXT NOT NULL
         )
     """)
-    # Fix: Ensure timestamp column exists
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS Interaction_Log (
             log_id INTEGER PRIMARY KEY,
@@ -75,5 +74,4 @@ def get_user_history(conn, user_id):
         WHERE user_id = ? 
         ORDER BY log_id DESC
     """, (user_id,))
-    # Returns a list of Row objects
     return cursor.fetchall()

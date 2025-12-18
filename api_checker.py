@@ -3,7 +3,6 @@ import os
 
 class DDInterChecker:
     def __init__(self):
-        # We use a dictionary for O(1) instant lookups instead of a list
         self.interaction_map = {} 
         self.all_drugs = []
         
@@ -11,18 +10,16 @@ class DDInterChecker:
         
         if self.csv_path:
             print(f"Loading database from: {self.csv_path}")
-            self._load_data() # This now builds the dictionary
+            self._load_data()
             self.all_drugs = sorted(list(self.all_drugs))
         else:
             print("⚠ WARNING: CSV not found. Loading Sample Data.")
-            # FALLBACK DATA
             self.all_drugs = sorted([
                 "Aspirin", "Warfarin", "Ibuprofen", "Tylenol", "Metformin", 
                 "Lisinopril", "Simvastatin", "Omeprazole", "Amoxicillin"
             ])
 
     def _find_csv(self):
-        """Aggressively looks for the CSV file."""
         filename = 'ddinter_ddi.csv'
         candidates = [
             os.path.join('data', filename),
@@ -37,11 +34,6 @@ class DDInterChecker:
         return None
 
     def _load_data(self):
-        """
-        Loads CSV into a Dictionary for instant access.
-        Key = (drug1, drug2) sorted alphabetically
-        Value = Interaction Details
-        """
         unique_drugs = set()
         try:
             with open(self.csv_path, mode='r', encoding='utf-8') as f:
@@ -54,11 +46,9 @@ class DDInterChecker:
                         unique_drugs.add(d1)
                         unique_drugs.add(d2)
                         
-                        # Create a standardized key by sorting names
-                        # This ensures (Aspirin, Warfarin) is the same key as (Warfarin, Aspirin)
+                        # Store standardized key (sorted alphabetically)
                         key = tuple(sorted([d1.lower(), d2.lower()]))
                         
-                        # Store the data
                         self.interaction_map[key] = {
                             'severity': row.get('Level', 'Unknown'),
                             'description': f"Interaction found between {d1} and {d2}"
@@ -77,14 +67,12 @@ class DDInterChecker:
         da = drug_a.strip().lower()
         db = drug_b.strip().lower()
 
-        # 1. GENERATE KEY: Sort the inputs exactly like we did when loading
         key = tuple(sorted([da, db]))
 
-        # 2. INSTANT LOOKUP: Check if this key exists in the dictionary
         if key in self.interaction_map:
             found.append(self.interaction_map[key])
         
-        # 3. MOCK FALLBACK (Only if DB is empty/missing)
+        # Fallback for testing if DB is empty
         if not self.interaction_map and not found:
             if (da == "aspirin" and db == "warfarin") or (da == "warfarin" and db == "aspirin"):
                 found.append({
